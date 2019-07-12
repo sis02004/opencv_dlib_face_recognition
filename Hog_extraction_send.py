@@ -1,53 +1,60 @@
-from imutils import face_utils
+from picamera.array import PiRGBArray
+from picamera import PiCamera
 import dlib
 import cv2
-import datetime
 import time
 import socket
 import struct
 import io
 import numpy
 
-p = "/home/pi/Downloads/install-dlib-example/shape_predictor_68_face_landmarks.dat"
+#count the order of persons in a frame
+cnt = 0
+
+camera = PiCamera()
+
+camera.resolution = (640,480)
+camera.framerate = 32
+rawCapture = PiRGBArray(camera, size=(640,480))
+
 detector = dlib.get_frontal_face_detector()
-predictor = dlib.shape_predictor(p)
-cap = cv2.VideoCapture(0)
-cap.set(3,640) # set Width
-cap.set(4,480) # set Height
-# load the input image and convert it to grayscale
-prev = 0
-i = 0
+time.sleep(0.1)
+#count the number of frames which a person has
+count = 0
+
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client_socket.connect(('192.168.0.99', 8000))
-encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 100]
 
-while True:
-	ret, img = cap.read()
-	img = cv2.flip(img, -1) # 
+for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
+	img = frame.array
 	gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-	
+	gray = cv2.equalizeHist(gray)
 	rects = detector(gray, 0)
-	for rect in rects:
-		
-		shape = predictor(gray, rect)
-		shape = face_utils.shape_to_np(shape)
-		(bX, bY, bW, bH) = face_utils.rect_to_bb(rect)
-		
-		cv2.rectangle(img, (bX, bY), (bX+bW, bY+bH), (0,255,0),1)
-		image = gray[bY:bY+bH,bX:bX+bW]
-		result , image = cv2.imencode('.jpg', image, encode_param)
+	vis = img.copy()
+	
+	for i, d in enumerate(rects) :
+		cv2.rectangle(vis, (d.left(), d.bottom()), (d.right(), d.top()), (0, 255, 0), 2)
+		cnt = cnt + 1
+		#when a person is detected, the frame number and the order of the person are stored in grayscale
+		result , image = cv2.imencode(str(count) + "_" + str(cnt) + ".jpg", gray[d.top():d.bottom(), d.left():d.right()], params=[cv2.IMWRITE_JPEG_QUALITY,100])
 		data = numpy.array(image)
 		stringData = data.tostring()
 		
 		client_socket.sendall((str(len(stringData))).encode().ljust(16) + stringData)
-		
-		
-	k = cv2.waitKey(3) & 0xff
-	cv2.imshow('video',img) # video
-	print("Print Video : "+str(time.time()))
-	if k == 27: # press 'ESC' to quit 
-		break
+	cv2.imshow("Frame", vis)
+	
+	key = cv2.waitKey(1) & 0xFF
+	rawCapture.truncate(0)
+	
+	#if no person is detected, continue
+	if len(rects) == 0:
+		continue
+	else:
+		count += 1
+		cnt = 0
 
-cap.release()
-cv2.destroyAllWindows()
+	#exit when ESC is input
+	if key == 27:
+		cv2.destroyWindow()
+		break
 
