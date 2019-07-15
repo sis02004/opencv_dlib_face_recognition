@@ -15,7 +15,7 @@ def recvall(sock, count):
  
 HOST='192.168.0.99'
 PORT=8000
- 
+PATH = "C:/Users/SB/Desktop/test/"
 #TCP 사용
 s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 print('Socket created')
@@ -33,14 +33,20 @@ i =0
 while True:
     # client에서 받은 stringData의 크기 (==(str(len(stringData))).encode().ljust(16))
     print("receving")
-    length = recvall(conn, 16)
+    filename = conn.recv(4)
+    length = recvall(conn, 12)
+    #name = recvall(conn, 8)
     stringData = recvall(conn, int(length))
+    #name = recvall(conn, )
     data = np.fromstring(stringData, dtype = 'uint8')
-    
     #data를 디코딩한다.
     frame = cv2.imdecode(data, cv2.IMREAD_COLOR)
+    name = filename.decode()
+    print(filename)
+    print(length)
+    print(name)
     cv2.imshow('ImageWindow',frame)
-    cv2.imwrite(str(time.time())+".jpg", frame)
+    cv2.imwrite(PATH+name+str(time.time())+".jpg", frame)
     cv2.waitKey(1)
     i+=1
     
