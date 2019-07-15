@@ -39,8 +39,9 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 		result , image = cv2.imencode(str(count) + "_" + str(cnt) + ".jpg", gray[d.top():d.bottom(), d.left():d.right()], params=[cv2.IMWRITE_JPEG_QUALITY,100])
 		data = numpy.array(image)
 		stringData = data.tostring()
+		personal_id = "0000"
+		client_socket.sendall((personal_id+(str(len(stringData)))).encode().ljust(16) + stringData)
 		
-		client_socket.sendall((str(len(stringData))).encode().ljust(16) + stringData)
 	cv2.imshow("Frame", vis)
 	
 	key = cv2.waitKey(1) & 0xFF
