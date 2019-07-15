@@ -28,7 +28,7 @@ client_socket.connect(('192.168.0.99', 8000))
 for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
 	img = frame.array
 	gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-	gray = cv2.equalizeHist(gray)
+	#gray = cv2.equalizeHist(gray)
 	rects = detector(gray, 0)
 	vis = img.copy()
 	
