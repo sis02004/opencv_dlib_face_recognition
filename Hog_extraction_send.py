@@ -36,7 +36,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 		cv2.rectangle(vis, (d.left(), d.bottom()), (d.right(), d.top()), (0, 255, 0), 2)
 		cnt = cnt + 1
 		#when a person is detected, the frame number and the order of the person are stored in grayscale
-		result , image = cv2.imencode(str(count) + "_" + str(cnt) + ".jpg", gray[d.top():d.bottom(), d.left():d.right()], params=[cv2.IMWRITE_JPEG_QUALITY,100])
+		result , image = cv2.imencode(".jpg", gray[int(float(d.top())*0.9):int(float(d.bottom())*1.1), int(float(d.left())*0.9):int(float(d.right())*1.1)], params=[cv2.IMWRITE_JPEG_QUALITY,100])
 		data = numpy.array(image)
 		stringData = data.tostring()
 		personal_id = "0000"
@@ -58,4 +58,3 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 	if key == 27:
 		cv2.destroyWindow()
 		break
-
