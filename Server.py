@@ -2,6 +2,8 @@ import socket
 import cv2
 import numpy as np
 import time
+import os
+from datetime import datetime
 #socket에서 수신한 버퍼를 반환하는 함수
 def recvall(sock, count):
     # 바이트 문자열
@@ -15,7 +17,7 @@ def recvall(sock, count):
  
 HOST='192.168.0.99'
 PORT=8000
-PATH = "C:/Users/SB/Desktop/test/"
+PATH = "C:/Users/SB/Desktop/face/"
 #TCP 사용
 s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 print('Socket created')
@@ -33,22 +35,24 @@ i =0
 while True:
     # client에서 받은 stringData의 크기 (==(str(len(stringData))).encode().ljust(16))
     print("receving")
-    filename = conn.recv(4)
-    length = recvall(conn, 12)
-    #name = recvall(conn, 8)
+    length = recvall(conn, 16)
     stringData = recvall(conn, int(length))
-    #name = recvall(conn, )
     data = np.fromstring(stringData, dtype = 'uint8')
     #data를 디코딩한다.
     frame = cv2.imdecode(data, cv2.IMREAD_COLOR)
-    name = filename.decode()
-    print(filename)
-    print(length)
-    print(name)
     cv2.imshow('ImageWindow',frame)
-    cv2.imwrite(PATH+name+str(time.time())+".jpg", frame)
+
+    filename = datetime.now().strftime("SB%Y%m%d_%H%M%S")+"_"+str(i)+".jpg"
+    filedir = datetime.now().strftime("SB%Y%m%d")
+    print(filename)
+
+    if not os.path.isdir(PATH+filedir):
+        i = 0
+        os.mkdir(PATH+filedir)
+
+    #cv2.imwrite(os.path.join(PATH+filedir, filename), frame)
+    cv2.imwrite(PATH+filedir+"/"+filename, frame)
     cv2.waitKey(1)
     i+=1
-    
     #data를 디코딩한다.
     
