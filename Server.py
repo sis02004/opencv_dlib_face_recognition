@@ -35,7 +35,9 @@ i =0
 while True:
     # client에서 받은 stringData의 크기 (==(str(len(stringData))).encode().ljust(16))
     print("receving")
-    length = recvall(conn, 16)
+    person_name = conn.recv(4)
+    p_name = person_name.decode()
+    length = recvall(conn, 12)
     stringData = recvall(conn, int(length))
     data = np.fromstring(stringData, dtype = 'uint8')
     #data를 디코딩한다.
@@ -43,7 +45,8 @@ while True:
     cv2.imshow('ImageWindow',frame)
 
     filename = datetime.now().strftime("SB%Y%m%d_%H%M%S")+"_"+str(i)+".jpg"
-    filedir = datetime.now().strftime("SB%Y%m%d")
+    filedir = datetime.now().strftime("SB_"+str(p_name))
+    print(p_name)
     print(filename)
 
     if not os.path.isdir(PATH+filedir):
