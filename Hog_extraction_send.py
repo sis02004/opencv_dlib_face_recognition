@@ -16,7 +16,8 @@ camera = PiCamera()
 camera.resolution = (640,480)
 camera.framerate = 32
 rawCapture = PiRGBArray(camera, size=(640,480))
-
+rec=cv2.face.LBPHFaceRecognizer_create()
+rec.read("/home/pi/Downloads/trainer (9).yml")
 detector = dlib.get_frontal_face_detector()
 time.sleep(0.1)
 #count the number of frames which a person has
@@ -35,11 +36,19 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 	for i, d in enumerate(rects) :
 		cv2.rectangle(vis, (d.left(), d.bottom()), (d.right(), d.top()), (0, 255, 0), 2)
 		cnt = cnt + 1
+		#id,conf=rec.predict(gray[y:y+h,x:x+w])
+		#cv2.putText(img,str(id),(x,y+h),font,0.45,(0,0,255))
 		#when a person is detected, the frame number and the order of the person are stored in grayscale
 		result , image = cv2.imencode(".jpg", gray[int(float(d.top())*0.9):int(float(d.bottom())*1.1), int(float(d.left())*0.9):int(float(d.right())*1.1)], params=[cv2.IMWRITE_JPEG_QUALITY,100])
+		id,conf=rec.predict(gray[int(float(d.top())*0.9):int(float(d.bottom())*1.1), int(float(d.left())*0.9):int(float(d.right())*1.1)])
+		if(conf < 50):
+			print(str(id))
+		else:
+			print('No Match')
+			id = 9999
 		data = numpy.array(image)
 		stringData = data.tostring()
-		personal_id = "0000"
+		personal_id = str(id)
 		client_socket.sendall((personal_id+(str(len(stringData)))).encode().ljust(16) + stringData)
 		
 	cv2.imshow("Frame", vis)
@@ -58,3 +67,4 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 	if key == 27:
 		cv2.destroyWindow()
 		break
+
