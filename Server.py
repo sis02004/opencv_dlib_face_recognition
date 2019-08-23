@@ -47,8 +47,8 @@ def train():
     
     
     while True:
-        time = int(datetime.today().minute)
-        if time%1 == 0:
+        time = int(datetime.today().hour)
+        if time%23 == 0:
             #TCP 사용
             s2=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
             print('Socket2 created')
@@ -130,8 +130,8 @@ def server():
     
 if __name__ == '__main__':
     process_one = Process(target=server, args=())
-    #process_two = Process(target=train, args=())
+    process_two = Process(target=train, args=())
     process_one.start()
-    #process_two.start()
+    process_two.start()
     process_one.join()
-    #process_two.join()
+    process_two.join()
